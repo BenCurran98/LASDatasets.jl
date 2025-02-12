@@ -125,7 +125,7 @@ function write_las(io::IO, las::LASDataset)
     write(io, byte_vector)
 
     @info "POST POINTS: $(position(io))"
-    @show Int(evlr_start(header))
+    @show evlr_start(header)
 
     for evlr ∈ get_evlrs(las)
         write(io, evlr)

@@ -129,7 +129,7 @@ function read_las_data(io::TIO, required_columns::TTuple=DEFAULT_LAS_COLUMNS;
     as_table = make_table(records, required_columns, xyz)
 
     @info "Post Records: $(position(io))"
-    @show Int(evlr_start(header))
+    @show evlr_start(header)
 
     conversion = if convert_to_metres
         convert_units!(as_table, vlrs, convert_x_y_units, convert_z_units)
