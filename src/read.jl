@@ -98,13 +98,24 @@ function read_las_data(io::TIO, required_columns::TTuple=DEFAULT_LAS_COLUMNS;
 
     header = read(io, LasHeader)
 
+    @info "HEADER:"
+    @show header
+    @show position(io)
+
     @assert number_of_points(header) > 0 "Las file has no points!"
 
     vlrs = load_vlrs(io, header)
+    
+    
+    @info "Post VLRs: $(position(io))"
 
     vlr_length = header.n_vlr == 0 ? 0 : sum(sizeof.(vlrs))
     pos = header.header_size + vlr_length
     user_defined_bytes = read(io, header.data_offset - pos)
+
+    @info "Post USER: $(position(io))"
+
+    @show point_data_offset(header)
 
     extra_bytes_vlr = extract_vlr_type(vlrs, LAS_SPEC_USER_ID, ID_EXTRABYTES)
     extra_bytes = isnothing(extra_bytes_vlr) ? ExtraBytes[] : get_extra_bytes(get_data(extra_bytes_vlr))
@@ -117,13 +128,27 @@ function read_las_data(io::TIO, required_columns::TTuple=DEFAULT_LAS_COLUMNS;
     read!(io, records)
     as_table = make_table(records, required_columns, xyz)
 
+    @info "Post Records: $(position(io))"
+    @show Int(evlr_start(header))
+
     conversion = if convert_to_metres
         convert_units!(as_table, vlrs, convert_x_y_units, convert_z_units)
     else
         NO_CONVERSION
     end
 
-    evlrs = Vector{LasVariableLengthRecord}(map(_ -> read(io, LasVariableLengthRecord, true), 1:number_of_evlrs(header)))
+    evlrs = Vector{LasVariableLengthRecord}(undef, number_of_evlrs(header))
+
+    @show number_of_evlrs(header)
+
+    for i ∈ 1:number_of_evlrs(header)
+        @show i
+        evlrs[i] = read(io, LasVariableLengthRecord, true)
+    end
+
+    @info "FINAL READ: $(position(io))"
+
+    # evlrs = Vector{LasVariableLengthRecord}(map(_ -> read(io, LasVariableLengthRecord, true), 1:number_of_evlrs(header)))
 
     LASDataset(header, as_table, vlrs, evlrs, user_defined_bytes, conversion)
 end

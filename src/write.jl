@@ -103,11 +103,19 @@ function write_las(io::IO, las::LASDataset)
 
     write(io, header)
 
+    @info "POST HEADER: $(position(io))"
+    @show header_size(header)
+
     for vlr ∈ vlrs
         write(io, vlr)
     end
 
+    @info "POST VLRS: $(position(io))"
+
     write(io, get_user_defined_bytes(las))
+
+    @info "POST USER DEFINED: $(position(io))"
+    @show point_data_offset(header)
 
     undoc_bytes = :undocumented_bytes ∈ columnnames(pc) ? pc.undocumented_bytes : fill(SVector{0, UInt8}(), length(pc))
 
@@ -116,9 +124,14 @@ function write_las(io::IO, las::LASDataset)
     byte_vector = get_record_bytes(las_records, vlrs)
     write(io, byte_vector)
 
+    @info "POST POINTS: $(position(io))"
+    @show Int(evlr_start(header))
+
     for evlr ∈ get_evlrs(las)
         write(io, evlr)
     end
+
+    @info "FINAL: $(position(io))"
 
     return nothing
 end
