@@ -224,6 +224,7 @@ function Base.read(io::IO, ::Type{LasVariableLengthRecord}, extended::Bool=false
     record_id = read(io, UInt16)
     record_data_length::Int = extended ? read(io, UInt64) : read(io, UInt16)
     description = readstring(io, 32)
+    @show description
     data_type_to_read = data_type_from_ids(user_id, record_id)
     data = read_vlr_data(io, data_type_to_read, record_data_length)
     LasVariableLengthRecord(
@@ -242,8 +243,14 @@ function Base.write(io::IO, vlr::LasVariableLengthRecord)
     write(io, vlr.record_id)
     record_data_length = vlr.extended ? UInt64(sizeof(vlr.data)) : UInt16(sizeof(vlr.data))
     write(io, record_data_length)
+    println("WRITING VLR DESCRIPTION")
+    @show position(io)
     writestring(io, vlr.description, 32)
+    println("DONE DESCRIPTION")
+    @show position(io)
     write(io, vlr.data)
+    println("FINISHED VLR DATA")
+    @show position(io)
     nothing
 end
 

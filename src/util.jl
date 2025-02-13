@@ -24,9 +24,11 @@ function writestring(io, str::AbstractString, nb::Integer)
     npad = nb - n
     @assert npad ≥ 0 "String length $(n) exceeds number of bytes $(nb)"
     if npad == 0
+        @show str
         write(io, str)
     else
         writestr = string(str * "\0" ^ npad)
+        @show writestr
         write(io, writestr)
     end
 end
