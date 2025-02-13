@@ -244,6 +244,7 @@ function Base.write(io::IO, vlr::LasVariableLengthRecord)
     record_data_length = vlr.extended ? UInt64(sizeof(vlr.data)) : UInt16(sizeof(vlr.data))
     write(io, record_data_length)
     println("WRITING VLR DESCRIPTION")
+    @show vlr.description
     before_pos =  position(io)
     @show before_pos
     writestring(io, vlr.description, 32)
